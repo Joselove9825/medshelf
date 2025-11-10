@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaUserNurse, FaEnvelope, FaLock, FaArrowRight, FaHospital } from 'react-icons/fa';
 import { Login_Server } from '@/server/login';
+import { set } from 'idb-keyval';
 
 export default function Login() {
   const router = useRouter();
@@ -13,6 +14,23 @@ export default function Login() {
   const [forgotEmail, setForgotEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+//dashboard by role
+const directByRole = (role) => {
+  switch (role) {
+    case 'super_admin':
+      router.push('/dashboard/super_admin');
+      break;
+    case 'admin':
+      router.push('/dashboard/admin');
+      break;
+    case 'nurse':
+      router.push('/dashboard/nurse');
+      break;
+    default:
+      router.push('/dashboard');
+  }
+}
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,26 +60,21 @@ export default function Login() {
       }
       
       if (result.redirectTo) {
-        // Store temporary user data for verification
-        localStorage.setItem('tempUser', JSON.stringify({
-          email: result.user.email,
-          name: result.user.name
-        }));
+        console.log(result);
         
-        // Store the temporary token if provided
-        if (result.tempToken) {
-          localStorage.setItem('tempToken', result.tempToken);
-        }
+      localStorage.setItem("Token", result.tempToken);
+      set("user", result.user);
         
         console.log('Redirecting to verification page...');
         router.push(result.redirectTo);
+
       } else if (result.token) {
         // If no redirect but has token, it's a direct login
         console.log('Storing token and user data...');
         localStorage.setItem('token', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
         console.log('Redirecting to dashboard...');
-        router.push('/dashboard');
+        router.push(`/medshare/${result.user.role}`);
       } else {
         throw new Error('No token received from server');
       }

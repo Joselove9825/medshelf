@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaEnvelope, FaCheckCircle, FaArrowLeft } from 'react-icons/fa';
+import { get } from 'idb-keyval';
 
 export default function EmailVerification() {
   const [code, setCode] = useState(Array(6).fill(''));
@@ -10,16 +11,23 @@ export default function EmailVerification() {
   const [error, setError] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const [email, setEmail] = useState('');
+  const [userRole, setUserRole] = useState('');
   const router = useRouter();
 
+const getUserData = async () => {
+  const idb_user_data = await get("user");
+  setUserRole(idb_user_data.role);
+  setEmail(idb_user_data.email);
+  return idb_user_data;
+}
+
   useEffect(() => {
-    // Get email from localStorage or redirect back to login
-    const userData = localStorage.getItem('tempUser');
+    const userData = getUserData();
+
     if (!userData) {
       router.push('/');
       return;
     }
-    setEmail(JSON.parse(userData).email);
   }, [router]);
 
   const handleChange = (e, index) => {
@@ -73,15 +81,10 @@ export default function EmailVerification() {
         throw new Error(data.error || 'Verification failed');
       }
       
-      // Store the auth token and user data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.removeItem('tempUser');
-      
       setIsVerified(true);
       // Redirect to dashboard after 1.5 seconds
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push(`/medshelf/${userRole}`);
       }, 1500);
       
     } catch (err) {
