@@ -23,8 +23,8 @@ const data = [
 
 const LineChart_medshelf = () => {
   return (
-    <div style={{ width: "100%", height: 300 }}>
-      <ResponsiveContainer>
+    <div className='w-full h-64 min-h-[300px]'>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
         <RechartsLineChart data={data}>
           <CartesianGrid stroke="#ccc" />
           <XAxis dataKey="name" />
@@ -41,8 +41,8 @@ const LineChart_medshelf = () => {
 
 const BarChart_medshelf = () => {
   return (
-    <div style={{ width: "100%", height: 300 }}>
-      <ResponsiveContainer>
+    <div className='w-full h-64 min-h-[300px]'>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
         <RechartsBarChart data={data}>
           <CartesianGrid stroke="#ccc" />
           <XAxis dataKey="name" />

@@ -54,7 +54,7 @@ export const libarian = defineType({
             name: "role",
             title: "Role",
             type: "array",
-            of: [{type: "string", options: {list: [{title: "Super Admin", value: "super_admin"}, {title: "Admin", value: "admin"}, {title: "Libarian", value: "libarian"}, {title: "User", value: "user"}]}}]
+            of: [{type: "string", options: {list: [{title: "Super Admin", value: "super_admin"}, {title: "Admin", value: "admin"}, {title: "Libarian", value: "libarian"}]}}]
         }),
         defineField({
             name: "email_verification_code",

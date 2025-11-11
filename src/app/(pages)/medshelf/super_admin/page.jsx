@@ -1,12 +1,16 @@
 'use client';
 import Image from 'next/image'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { get } from 'idb-keyval'
 import { Mooli } from 'next/font/google';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBook, FaUser, FaPlus, FaFile, FaChartLine, FaUserPlus, FaUserCog } from 'react-icons/fa';
 import { LineChart_medshelf, BarChart_medshelf }from '@/components/super_admin/charts/charts';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { useAuth } from '@/context/auth_context';
+import { Fetch_Staff_Count, Fetch_Users } from '@/server/super_admin/users';
+import CountUp from 'react-countup';
 
 const mooli = Mooli({
   weight: '400',
@@ -15,23 +19,31 @@ const mooli = Mooli({
 });
 
 const Home = () => {
-const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);
+  const {authenticated} = useAuth();
+  const [dashbard_info, setDashboardInfo] = useState({ all_staff_count: 0 });
+
+  if(!authenticated){
+    localStorage.removeItem("token");
+    window.location.href = "/";
+  }
 
   const getUserData = async () => {
     const idb_user_data = await get("user");
     return idb_user_data;
   }
 
+
+
   const links = [
-    {name: "Manage Staff" , href: "/medshelf/super_admin/staff", icon: FaUserCog},
+    {name: "Manage Staff" , href: "/medshelf/super_admin/manage_staff", icon: FaUserCog},
     {name: "Books Management" , href: "/medshelf/super_admin/books", icon: FaBook},
     {name: "Borrowers Management", href: "/medshelf/super_admin/borrowers", icon: FaUser},
-    {name: "Add Books", href: "/medshelf/super_admin/add_books", icon: FaPlus},
-    {name: "Add Borrowers", href: "/medshelf/super_admin/add_borrowers", icon: FaUserPlus},
     {name: "Generate Reports", href:"/medshelf/super_admin/generate_reports", icon: FaFile}
   ]
   
   useEffect(() => {
+
     const fetchUser = async () => {
       try {
         const userData = await getUserData();
@@ -42,6 +54,36 @@ const [user, setUser] = useState(null);
       }
     };
     
+    const all_staff_count = async () => {
+      try {
+        const response = await Fetch_Staff_Count();
+        console.log('Staff count response:', response);
+        
+        if (response?.success) {
+          // The count is directly in response.data as a number
+          const count = typeof response.data === 'number' ? response.data : 0;
+          
+          setDashboardInfo(prev => ({
+            ...prev,
+            all_staff_count: count
+          }));
+        } else {
+          console.warn('Failed to fetch staff count:', response);
+          setDashboardInfo(prev => ({
+            ...prev,
+            all_staff_count: 0
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching staff count:', error);
+        setDashboardInfo(prev => ({
+          ...prev,
+          all_staff_count: 0
+        }));
+      }
+    };
+
+    all_staff_count();
     fetchUser();
   }, []);
   
@@ -101,11 +143,40 @@ const [user, setUser] = useState(null);
             <p className='text-2xl font-bold text-blue-600'>0</p>
             <p className='text-xs text-gray-500 mt-1'>Available in the library</p>
           </div>
+
           <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
             <h3 className='text-gray-500 text-sm font-medium'>Borrowers</h3>
             <p className='text-2xl font-bold text-green-600'>0</p>
             <p className='text-xs text-gray-500 mt-1'>Active members</p>
           </div>
+          
+          <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
+            <h3 className='text-gray-500 text-sm font-medium'>Total Books Borrowed</h3>
+            <p className='text-2xl font-bold text-red-600'>0</p>
+            <p className='text-xs text-gray-500 mt-1'>Number of books borrowed</p>
+          </div>
+
+          <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
+            <h3 className='text-gray-500 text-sm font-medium'>Overdue Books</h3>
+            <p className='text-2xl font-bold text-amber-600'>0</p>
+            <p className='text-xs text-gray-500 mt-1'>Number of exceeding return date </p>
+          </div>
+          
+          <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
+            <h3 className='text-gray-500 text-sm font-medium'>Total Staff</h3>
+            <div className='text-2xl font-bold text-fuchsia-500'>
+              <CountUp
+                end={dashbard_info.all_staff_count}
+                duration={2.5}
+                separator=','
+                useEasing={true}
+                enableScrollSpy={true}
+                scrollSpyOnce={true}
+              />
+            </div>
+            <p className='text-xs text-gray-500 mt-1'>Staff Count</p>
+          </div>
+
           <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
             <h3 className='text-gray-500 text-sm font-medium'>Reports</h3>
             <p className='text-2xl font-bold text-purple-600'>0</p>
