@@ -18,6 +18,39 @@ const mooli = Mooli({
   display: 'swap',
 });
 
+// Animation variants
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 10
+    }
+  }
+};
+
+const cardHover = {
+  scale: 1.02,
+  transition: { type: 'spring', stiffness: 300 }
+};
+
+const cardTap = {
+  scale: 0.98
+};
+
 const Home = () => {
   const [user, setUser] = useState(null);
   const {authenticated} = useAuth();
@@ -135,73 +168,150 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className='w-full max-w-6xl mx-auto mb-8'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 px-4'>
-          <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
-            <h3 className='text-gray-500 text-sm font-medium'>Total Books</h3>
-            <p className='text-2xl font-bold text-blue-600'>0</p>
-            <p className='text-xs text-gray-500 mt-1'>Available in the library</p>
-          </div>
+      {/* Dashboard Cards */}
+      <motion.div 
+        className='grid grid-cols-1 md:grid-cols-3 gap-6 p-6'
+        variants={container}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div 
+          className='bg-white p-6 rounded-lg shadow-sm border border-gray-100 cursor-pointer'
+          variants={item}
+          whileHover={cardHover}
+          whileTap={cardTap}
+        >
+          <h3 className='text-gray-500 text-sm font-medium'>Total Books</h3>
+          <motion.p 
+            className='text-2xl font-bold text-blue-600'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            0
+          </motion.p>
+          <p className='text-xs text-gray-500 mt-1'>Available in the library</p>
+        </motion.div>
 
-          <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
-            <h3 className='text-gray-500 text-sm font-medium'>Borrowers</h3>
-            <p className='text-2xl font-bold text-green-600'>0</p>
-            <p className='text-xs text-gray-500 mt-1'>Active members</p>
-          </div>
-          
-          <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
-            <h3 className='text-gray-500 text-sm font-medium'>Total Books Borrowed</h3>
-            <p className='text-2xl font-bold text-red-600'>0</p>
-            <p className='text-xs text-gray-500 mt-1'>Number of books borrowed</p>
-          </div>
+        <motion.div 
+          className='bg-white p-6 rounded-lg shadow-sm border border-gray-100 cursor-pointer'
+          variants={item}
+          whileHover={cardHover}
+          whileTap={cardTap}
+        >
+          <h3 className='text-gray-500 text-sm font-medium'>Borrowers</h3>
+          <motion.p 
+            className='text-2xl font-bold text-green-600'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            0
+          </motion.p>
+          <p className='text-xs text-gray-500 mt-1'>Active members</p>
+        </motion.div>
 
-          <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
-            <h3 className='text-gray-500 text-sm font-medium'>Overdue Books</h3>
-            <p className='text-2xl font-bold text-amber-600'>0</p>
-            <p className='text-xs text-gray-500 mt-1'>Number of exceeding return date </p>
-          </div>
-          
-          <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
-            <h3 className='text-gray-500 text-sm font-medium'>Total Staff</h3>
-            <div className='text-2xl font-bold text-fuchsia-500'>
-              <CountUp
-                end={dashbard_info.all_staff_count}
-                duration={2.5}
-                separator=','
-                useEasing={true}
-                enableScrollSpy={true}
-                scrollSpyOnce={true}
-              />
-            </div>
-            <p className='text-xs text-gray-500 mt-1'>Staff Count</p>
-          </div>
+        <motion.div 
+          className='bg-white p-6 rounded-lg shadow-sm border border-gray-100 cursor-pointer'
+          variants={item}
+          whileHover={cardHover}
+          whileTap={cardTap}
+        >
+          <h3 className='text-gray-500 text-sm font-medium'>Total Books Borrowed</h3>
+          <motion.p 
+            className='text-2xl font-bold text-red-600'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            0
+          </motion.p>
+          <p className='text-xs text-gray-500 mt-1'>Number of books borrowed</p>
+        </motion.div>
 
-          <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'>
-            <h3 className='text-gray-500 text-sm font-medium'>Reports</h3>
-            <p className='text-2xl font-bold text-purple-600'>0</p>
-            <p className='text-xs text-gray-500 mt-1'>Generated this month</p>
-          </div>
-        </div>
-      </div>
+        <motion.div 
+          className='bg-white p-6 rounded-lg shadow-sm border border-gray-100 cursor-pointer'
+          variants={item}
+          whileHover={cardHover}
+          whileTap={cardTap}
+        >
+          <h3 className='text-gray-500 text-sm font-medium'>Overdue Books</h3>
+          <motion.p 
+            className='text-2xl font-bold text-amber-600'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            0
+          </motion.p>
+          <p className='text-xs text-gray-500 mt-1'>Number of exceeding return date</p>
+        </motion.div>
+
+        <motion.div 
+          className='bg-white p-6 rounded-lg shadow-sm border border-gray-100 cursor-pointer'
+          variants={item}
+          whileHover={cardHover}
+          whileTap={cardTap}
+        >
+          <h3 className='text-gray-500 text-sm font-medium'>Total Staff</h3>
+          <motion.div 
+            className='text-2xl font-bold text-fuchsia-500'
+          >
+            <CountUp
+              end={dashbard_info.all_staff_count}
+              duration={2.5}
+              separator=','
+              useEasing={true}
+              enableScrollSpy={true}
+              scrollSpyOnce={true}
+            />
+          </motion.div>
+          <p className='text-xs text-gray-500 mt-1'>Staff Count</p>
+        </motion.div>
+
+        <motion.div 
+          className='bg-white p-6 rounded-lg shadow-sm border border-gray-100 cursor-pointer'
+          variants={item}
+          whileHover={cardHover}
+          whileTap={cardTap}
+        >
+          <h3 className='text-gray-500 text-sm font-medium'>Reports</h3>
+          <motion.p 
+            className='text-2xl font-bold text-purple-600'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            0
+          </motion.p>
+          <p className='text-xs text-gray-500 mt-1'>Generated this month</p>
+        </motion.div>
+      </motion.div>
 
       {/* Charts Section */}
-      <div className='w-full max-w-6xl mx-auto'>
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 px-4'>
-          <div className='bg-white p-4 rounded-lg shadow-sm border border-gray-100'>
-            <h3 className='text-gray-700 font-medium mb-4'>Weekly Activity</h3>
-            <div className='h-64'>
-              <LineChart_medshelf />
-            </div>
-          </div>
-          <div className='bg-white p-4 rounded-lg shadow-sm border border-gray-100'>
-            <h3 className='text-gray-700 font-medium mb-4'>Monthly Overview</h3>
-            <div className='h-64'>
-              <BarChart_medshelf />
-            </div>
-          </div>
-        </div>
-      </div>
+      <motion.div 
+        className='grid grid-cols-1 lg:grid-cols-2 gap-6 p-6'
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+      >
+        <motion.div 
+          className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'
+          whileHover={{ scale: 1.01, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
+          <h3 className='text-lg font-semibold text-gray-800 mb-4'>Monthly Book Loans</h3>
+          <LineChart_medshelf />
+        </motion.div>
+        <motion.div 
+          className='bg-white p-6 rounded-lg shadow-sm border border-gray-100'
+          whileHover={{ scale: 1.01, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}
+          transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
+        >
+          <h3 className='text-lg font-semibold text-gray-800 mb-4'>Books by Category</h3>
+          <BarChart_medshelf />
+        </motion.div>
+      </motion.div>
 
       {/* other stats */}
       <div className='w-full h-full max-h-100 max-w-6xl mx-auto mt-8'>
