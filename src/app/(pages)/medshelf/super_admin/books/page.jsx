@@ -1,10 +1,12 @@
 "use client"
-import { ChevronDown, ChevronUp, Home, Plus, Search } from 'lucide-react'
+import { ChevronDown, ChevronUp, Filter, Home, Plus, Search, X } from 'lucide-react'
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Mooli } from 'next/font/google'
 import BookList from '@/components/books/BookList'
+import BooksDetails from '@/components/books/BooksDetails'
 
 const mooli = Mooli({
     weight: '400',
@@ -13,29 +15,35 @@ const mooli = Mooli({
 });
 
 const menuItems = [
-    { label: 'Manage Books', onClick: "" },
-    { label: 'Add Book', onClick: "" },
-    { label: 'Manage Borrowing', onClick: "" },
-    { label: 'Manage Categories', onClick: "" },
-
-
+    { label: 'Manage Books', path: '/medshelf/super_admin/books' },
+    { label: 'Add Book', path: '/medshelf/super_admin/books/add' },
+    { label: 'Manage Borrowing', path: '/medshelf/super_admin/borrowing' },
+    { label: 'Manage Categories', path: '/medshelf/super_admin/categories' },
 ];
 
 const Books = () => {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [specificBook, setSpecificBook] = useState(null);
 
   const handleMenuClick = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleMenuItemClick = (path) => {
+    // You can add additional logic here if needed
+    router.push(path);
+    setIsMenuOpen(false);
+  };
+
   return (
     <AnimatePresence>
-      <div className={`w-full h-screen ${mooli.className}`}>
+      <div className={`w-full h-screen ${mooli.className} `}>
         {/* top navigation bar */}
       <div className='w-full min-h-10 py-5 bg-blue-200 flex flex-row items-center relative'>
         <div>
           <Link href='/medshelf/super_admin' className='hover:text-blue-700'>
-            <Home className='ml-3'/>
+            <Home className='ml-3' size={20}/>
           </Link>
         </div>
         <div className='absolute right-0 mr-5'>
@@ -53,9 +61,13 @@ const Books = () => {
             >
               {menuItems.map((item, index) => (
                 <li key={index}>
-                  <button onClick={item.onClick} className="block px-4 py-2 text-sm w-full text-left text-gray-700 hover:bg-gray-100">
+                  <Link 
+                    href={item.path}
+                    className="block px-4 py-2 text-sm w-full text-left text-gray-700 hover:bg-gray-100"
+                    onClick={() => handleMenuItemClick(item.path)}
+                  >
                     {item.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </motion.div>
@@ -80,9 +92,19 @@ const Books = () => {
               <h4>Showing result of 10 books</h4>
             </div>
           </div>
-
+          {/* filter toggler */}
+          <div className='w-full min-w-2xl flex justify-end'>
+            <button className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex flex-row items-center'> <Filter size={15}/> Filter</button>
+          </div>
           {/* books list */}
-          <BookList />
+          <BookList setSpecificBook={setSpecificBook}/>
+
+          {/* book info */}
+          {specificBook && (
+            <BooksDetails specificBook={specificBook} setSpecificBook={setSpecificBook}/>
+          )}
+          {/* book info end */}
+
         </div>
       </div>
     </div>

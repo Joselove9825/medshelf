@@ -2,9 +2,35 @@
 
 import { useEffect, useState } from 'react';
 import { client } from '@/sanity/lib/client';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 
-const BookList = () => {
+// Animation variants
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { 
+    opacity: 1, 
+    y: 0,
+    transition: {
+      type: 'spring',
+      stiffness: 100,
+      damping: 15
+    }
+  }
+};
+
+const BookList = ({setSpecificBook}) => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,23 +38,46 @@ const BookList = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const query = `*[_type == "book"] | order(_createdAt desc) {
-          _id,
-          title,
-          author,
-          description,
-          coverImage{
-            asset->{
-              url
-            },
-            alt
-          },
-          category->{
-            title
-          },
-          year,
-          pages
-        }`;
+ const query = `*[_type == "book"] | order(_createdAt desc) {
+  _id,
+  title,
+  author,
+  description,
+  coverImage {
+    asset->{url},
+    alt
+  },
+  "category": *[_type == "category" && _id == ^.category._ref][0] {
+    _id,
+    name
+  },
+  publisher,
+  isbn,
+  year,
+  pages,
+  stock,
+  borrowed,
+  // 👇 Capture the book ID here
+  "bookId": _id,
+  "borrowers": *[_type == "borrower" && references(^._id)] {
+    _id,
+    studentId,
+    firstName,
+    lastName,
+    email,
+    contactNumber,
+    // 👇 Now match using bookId (from the parent)
+    "borrowedBook": borrowedBooks[book._ref == ^.^.bookId] {
+      borrowedAt,
+      returnDate,
+      returnStatus
+    }
+  },
+  createdAt,
+  updatedAt
+}`;
+
+
         const result = await client.fetch(query);
         setBooks(result);
       } catch (err) {
@@ -42,16 +91,31 @@ const BookList = () => {
     fetchBooks();
   }, []);
 
-  if (loading) return <div className="text-center py-10">Loading books...</div>;
+  if (loading) return <div className="text-center py-10 w-full flex flex-col justify-center items-center space-y-3 text-blue-500"><Loader2 size={20} className='animate-spin'/><span>Loading...</span></div>;
   if (error) return <div className="text-center text-red-500 py-10">{error}</div>;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-      {books.map((book) => (
+    <motion.div 
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6"
+      variants={container}
+      initial="hidden"
+      animate="show"
+    >
+      {books.map((book, index) => (
         <motion.div
           key={book._id}
-          className="relative group bg-white rounded-lg overflow-hidden shadow-md max-w-[220px] mx-auto"
-          whileHover={{ scale: 1.02 }}
+          className="relative group bg-white rounded-lg overflow-hidden shadow-md max-w-[220px] mx-auto hover:cursor-pointer"
+          variants={item}
+          whileHover={{ 
+            scale: 1.02,
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+          }}
+          transition={{ 
+            type: 'spring',
+            stiffness: 300,
+            damping: 20
+          }}
+          onClick={() => setSpecificBook(book)}
         >
           {/* Book Cover */}
           <div className="relative w-full h-64 overflow-hidden">
@@ -95,7 +159,7 @@ const BookList = () => {
           </motion.div>
         </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };
 
