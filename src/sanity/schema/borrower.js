@@ -50,45 +50,6 @@ export const borrower = defineType({
       type: 'string',
     }),
     defineField({
-      name: 'borrowedBooks',
-      title: 'Borrowed Books',
-      type: 'array',
-      of: [
-        {
-          type: 'object',
-          fields: [
-            defineField({
-              name: 'book',
-              title: 'Book',
-              type: 'reference',
-              to: [{ type: 'book' }],
-            }),
-            defineField({
-              name: 'borrowedAt',
-              title: 'Borrowed At',
-              type: 'datetime',
-            }),
-            defineField({
-              name: 'returnDate',
-              title: 'Return Date',
-              type: 'datetime',
-            }),
-            defineField({
-              name: 'returnStatus',
-              title: 'Return Status',
-              type: 'string',
-              options: {
-                list: [
-                  { title: 'Returned', value: 'returned' },
-                  { title: 'Not Returned', value: 'notReturned' },
-                ],
-              },
-            }),
-          ],
-        },
-      ],
-    }),
-    defineField({
       name: 'profilePicture',
       title: 'Profile Picture',
       type: 'image',

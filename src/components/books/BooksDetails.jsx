@@ -1,6 +1,25 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useEffectEvent, useState } from 'react'
 import { X, BookOpen, User, Tag, Calendar, FileText, Hash, Layers, Clock, Edit, Phone, Mail } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion';
+import { client } from '@/sanity/lib/client';
+
+
+
+function CheckBookDueDate(due_date){
+  const today = new Date();
+  const dueDate = new Date(due_date);
+
+  if(today > dueDate){
+    return {
+      status: 'overdue',
+      color: 'text-red-600 font-bold'
+    };
+  }
+  return {
+    status: 'on time',
+    color: 'text-green-600 font-bold'
+  };
+}
 
 const BookDetailItem = ({ icon: Icon, label, value, className = '' }) => (
   <div className={`flex items-start py-3 border-b border-gray-100 ${className}`}>
@@ -16,142 +35,163 @@ const BookDetailItem = ({ icon: Icon, label, value, className = '' }) => (
   </div>
 )
 
+const BorrowersCard = ({bookId}) => {
+  "use client"
+   const [borrowers, setBorrowers] = useState([]);
+   
+   useEffect(() => {
+   client.fetch(`*[_type == "borrowing" && book._ref == "${bookId}"]{
+  book->{
+    _id,
+    title,
+    author,
+    coverImage
+  },
+  borrower->{
+    _id,
+    firstName,
+    lastName,
+    studentId,
+    profilePicture
+  },
+  borrowedAt,
+  returnDate,
+  returnStatus,
+  fine,
+  notes
+}`)
+    .then((data) => {
+      setBorrowers(data)
+      console.log(data)
+    })
+    .catch((err) => console.log(err));
+   }, [bookId]);
+   
+
+   useEffect(() => {
+    console.log(borrowers)
+   }, [borrowers]);
 
 
-const BorrowersCard = ({ borrower }) => {
-    "use client"
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 20 },
-    show: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        type: 'spring',
-        stiffness: 100,
-        damping: 12
-      }
-    },
-    hover: {
-      scale: 1.01,
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-      transition: { duration: 0.2 }
-    }
-  };
-
-  const countVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { 
-        type: 'spring',
-        stiffness: 200,
-        damping: 15
-      }
-    }
-  };
-
-  return (
+   // Animation variants for the container
+   const container = {
+     hidden: { opacity: 0 },
+     show: {
+       opacity: 1,
+       transition: {
+         staggerChildren: 0.1
+       }
+     }
+   };
+   
+   // Animation variants for each item
+   const item = {
+     hidden: { opacity: 0, y: 20 },
+     show: { 
+       opacity: 1, 
+       y: 0,
+       transition: {
+         duration: 0.4,
+         ease: 'easeOut'
+       }
+     },
+     hover: {
+       scale: 1.01,
+       transition: {
+         duration: 0.2
+       }
+     }
+   };
+   
+   return (
     <motion.div 
-      className='w-full py-4 flex flex-col overflow-y-auto max-h-[200px]'
-      initial="hidden"
-      animate={isMounted ? "show" : "hidden"}
+      className="mt-6 space-y-4 overflow-auto"
       variants={container}
+      initial="hidden"
+      animate="show"
     >
-      <div className='flex items-center gap-2 mb-2'>
-        <h1 className='text-md font-bold text-gray-600'>Borrowers</h1>
-        {borrower?.length > 0 && (
-          <motion.span 
-            className='bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full'
-            variants={countVariants}
-          >
-            {borrower.length}
-          </motion.span>
-        )}
-      </div>
-      
-      <motion.div className='mt-2 w-full space-y-2' variants={container}>
-        <AnimatePresence>
-          {borrower?.map((borrower, index) => (
-            <motion.div 
-              key={borrower._id || index}
-              className='flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-100'
-              variants={item}
-              whileHover="hover"
-              layout
-            >
-              <motion.div 
-                className='w-7 h-7 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex-shrink-0 flex items-center justify-center text-blue-600 text-xs font-bold border-2 border-white shadow-sm'
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ 
-                  type: 'spring',
-                  stiffness: 200,
-                  damping: 15
+      {borrowers.map((borrower) => (
+        <motion.div 
+          key={borrower?.borrower?._id} 
+          className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow duration-200"
+          variants={item}
+          whileHover="hover"
+          layout
+          transition={{ 
+            layout: { duration: 0.3, ease: 'easeInOut' } 
+          }}
+        >
+          <div className="flex items-center space-x-4">
+            <div className="flex-shrink-0">
+              <img 
+                src={borrower?.borrower?.profilePicture?.asset?.url || '/assets/purple.jpg'}
+                alt={`${borrower?.borrower?.firstName} ${borrower?.borrower?.lastName}`}
+                className="w-16 h-16 rounded-full border-2 border-white shadow-sm object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/assets/purple.jpg';
                 }}
-              >
-                {borrower?.firstName?.[0]?.toUpperCase()}
-              </motion.div>
-              <div className='min-w-0'>
-                <p className='text-sm font-medium text-gray-700 truncate'>
-                  {borrower?.firstName} {borrower?.lastName}
-                </p>
-                <p className='text-xs text-gray-500 truncate'>
-                  <span className='font-semibold'>ID:</span> {borrower?.studentId}
-                </p>
-                {borrower?.borrowedBook?.[0]?.returnDate && (
-                  <motion.p 
-                    className='text-xs font-medium mt-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full inline-flex items-center'
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Clock size={10} className='mr-1' />
-                    Due: {new Date(borrower.borrowedBook[0].returnDate).toLocaleDateString()}
-                  </motion.p>
-                )}
-                <div className='flex flex-col gap-0.5 mt-1'>
-                  <a 
-                    href={`mailto:${borrower?.email}`}
-                    className='text-xs text-blue-600 hover:underline flex items-center'
-                  >
-                    <Mail size={10} className='mr-1' />
-                    <span className='truncate'>{borrower?.email}</span>
-                  </a>
-                  <a 
-                    href={`tel:${borrower?.contactNumber}`}
-                    className='text-xs text-gray-500 hover:text-blue-600 flex items-center'
-                  >
-                    <Phone size={10} className='mr-1' />
-                    {borrower?.contactNumber}
-                  </a>
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-900 truncate">
+                    {borrower?.borrower?.firstName} {borrower?.borrower?.lastName}
+                  </h4>
+                  <p className="text-sm text-gray-500 flex items-center">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
+                      ID: {borrower?.borrower?.studentId || 'N/A'}
+                    </span>
+                  </p>
+                </div>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  borrower?.returnStatus === 'returned' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {borrower?.returnStatus || 'Unknown'}
+                </span>
+              </div>
+              
+              <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Borrowed On</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {formatDate(borrower?.borrowedAt) || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Due Date</p>
+                  <p className={`text-sm font-medium ${
+                    new Date(borrower?.returnDate) < new Date() && borrower?.returnStatus !== 'returned'
+                      ? 'text-red-600'
+                      : 'text-gray-900'
+                  } ${CheckBookDueDate(borrower?.returnDate).color}`}>
+                    {formatDate(borrower?.returnDate) || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-500">Fine</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {borrower?.fine ? `$${parseFloat(borrower.fine).toFixed(2)}` : '$0.00'}
+                  </p>
                 </div>
               </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
+              
+              {borrower?.notes && (
+                <div className="mt-3">
+                  <p className="text-xs font-medium text-gray-500">Notes</p>
+                  <p className="text-sm text-gray-600 italic">{borrower.notes}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      ))}
     </motion.div>
-  );
-};
+   )
+}
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -272,8 +312,8 @@ const BooksDetails = ({ specificBook, setSpecificBook }) => {
                           value={formatDate(specificBook.updatedAt)} 
                         />
                       </div>
+                      <BorrowersCard bookId={specificBook._id}/>
                     </div>
-                    <BorrowersCard borrower={specificBook.borrowers}/>
                   </div>
                 </div>
               </div>

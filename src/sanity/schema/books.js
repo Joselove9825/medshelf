@@ -58,12 +58,6 @@ export const books = defineType({
       type: 'number',
     }),
     defineField({
-        name: "borrowers",
-        title: "Borrowers",
-        type: "array",
-        of: [{ type: "reference", to: [{ type: "borrower" }] }],
-    }),
-    defineField({
       name: 'borrowed',
       title: 'Borrowed',
       type: 'number',
