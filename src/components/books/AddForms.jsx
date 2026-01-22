@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { Add_Books } from "@/server/super_admin/books";
 
 export default function BookForm({ categories }) {
   const [form, setForm] = useState({
@@ -14,7 +16,6 @@ export default function BookForm({ categories }) {
     pages: "",
     description: "",
     stock: "",
-    borrowed: "",
   });
 
   const handleChange = (e) => {
@@ -28,8 +29,42 @@ export default function BookForm({ categories }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Example: send to API route
-    console.log("Submitting form:", form);
+
+    if (!form.title || !form.author || !form.category || !form.publisher || !form.isbn || !form.year || !form.pages || !form.description || !form.stock) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (parseInt(form.stock) < 0) {
+      toast.error("Stock cannot be negative");
+      return;
+    }
+    
+    console.log(form)
+
+    try {
+      const response = await Add_Books(form);
+      if (response.success) {
+        toast.success(response.message);
+        setForm({
+          coverImage: "",
+          title: "",
+          author: "",
+          category: "",
+          publisher: "",
+          isbn: "",
+          year: "",
+          pages: "",
+          description: "",
+          stock: "",
+        });
+      } else {
+        toast.error(response.message);
+      }
+    } catch (error) {
+      console.error("Error adding book:", error);
+      toast.error("Failed to add book");
+    }
   };
 
   return (
@@ -63,7 +98,7 @@ export default function BookForm({ categories }) {
             value={form.title}
             onChange={handleChange}
             className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                       focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 px-2"
             required
           />
         </div>
@@ -77,7 +112,7 @@ export default function BookForm({ categories }) {
             value={form.author}
             onChange={handleChange}
             className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                       focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 px-2"
           />
         </div>
 
@@ -89,12 +124,12 @@ export default function BookForm({ categories }) {
             value={form.category}
             onChange={handleChange}
             className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                       focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 px-2"
           >
             <option value="">Select a category</option>
             {categories.map((c) => (
-              <option key={c._id} value={c._id}>
-                {c.title}
+              <option key={c._id} value={c._id} className="text-black">
+                {c.name}
               </option>
             ))}
           </select>
@@ -110,7 +145,7 @@ export default function BookForm({ categories }) {
               value={form.publisher}
               onChange={handleChange}
               className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 px-2"
             />
           </div>
           <div>
@@ -121,18 +156,18 @@ export default function BookForm({ categories }) {
               value={form.isbn}
               onChange={handleChange}
               className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 px-2"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Year</label>
             <input
-              type="number"
+              type="text"
               name="year"
               value={form.year}
               onChange={handleChange}
               className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 px-2"
             />
           </div>
           <div>
@@ -143,7 +178,7 @@ export default function BookForm({ categories }) {
               value={form.pages}
               onChange={handleChange}
               className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 px-2"
             />
           </div>
         </div>
@@ -157,7 +192,7 @@ export default function BookForm({ categories }) {
             onChange={handleChange}
             rows={4}
             className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                       focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                       focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 px-2"
           />
         </div>
 
@@ -171,18 +206,7 @@ export default function BookForm({ categories }) {
               value={form.stock}
               onChange={handleChange}
               className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Borrowed</label>
-            <input
-              type="number"
-              name="borrowed"
-              value={form.borrowed}
-              onChange={handleChange}
-              className="mt-2 block w-full rounded-md border-gray-300 shadow-sm
-                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                         focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 px-2"
             />
           </div>
         </div>

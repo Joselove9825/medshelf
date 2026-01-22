@@ -8,7 +8,7 @@ import { useState } from 'react'
 const menuItems = [
     { label: 'View Books', path: '/medshelf/super_admin/books' },
     { label: 'Add Book', path: '/medshelf/super_admin/books/add' },
-    { label: 'Manage Borrowing', path: '/medshelf/super_admin/borrowing' },
+    { label: 'Manage Borrowing', path: '/medshelf/super_admin/books/manage_borrowing' },
     { label: 'Manage Categories', path: '/medshelf/super_admin/categories' },
 ];
 

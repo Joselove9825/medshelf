@@ -15,6 +15,7 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+    domains: ["www.auraui.com", "localhost", "sanity.studio", "cdn.sanity.io"], 
   },
 };
 
